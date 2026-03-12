@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Maps 2.0 | Visão Inteligente</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    
     <link rel="stylesheet" href="./style.css">
-    <title>Map API</title>
 </head>
 <body>
-    <header id="gradiente">
-        <div class="logo">
-            <img src="https://images.vexels.com/media/users/3/157933/isolated/preview/e1855ec756f425b054d7c567a57e95b2-dark-earth-icon.png" alt="Earth Icon">
-            <h1>LOCAL FINDER</h1>
+    <div class="ui-wrapper">
+        <div class="search-bar">
+            <input type="text" id="input-busca" placeholder="Pesquisar país, estado ou cidade...">
+            <button id="btn-busca">🔍</button>
+            <div class="divider"></div>
+            <button id="btn-gps" title="Minha Localização">🎯</button>
         </div>
-        <button onclick="localizarUsuario()" class="onde-estou">Onde estou?</button>
-        <div class="busca">
-            <input type="text" id="campo-busca" placeholder="Digite um lugar...">
-            <button onclick="buscarLocalizacao()" class="send"><img src="./img/buscar-local.svg" class="send-img"></button>
+
+        <div class="map-layers">
+            <button id="layer-street" class="active">Rua</button>
+            <button id="layer-sat">Satélite</button>
         </div>
-    </header>
+    </div>
+
     <div id="map"></div>
+    <div id="status-bar">Aguardando pesquisa...</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script src="./script.js"></script>
 </body>
 </html>

@@ -1,47 +1,111 @@
-// 1. INICIALIZAR O MAPA
-// Local inicial: Brasília
-const map = L.map('map').setView([-15.7938, -47.8827], 4);
-
-// 2. ADICIONAR AS IMAGENS DO MAPA
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map);
-
-// 3. CONFIGURAR O MOTOR DE BUSCA (GEOCODER)
-const buscador = L.Control.Geocoder.nominatim();
-
-// 4. FUNÇÃO: ONDE ESTOU?
-function localizarUsuario() {
-    navigator.geolocation.getCurrentPosition((posicao) => {
-        const lat = posicao.coords.latitude;
-        const lng = posicao.coords.longitude;
-
-        map.flyTo([lat, lng], 16);
-        L.marker([lat, lng]).addTo(map).bindPopup("Você está aqui!").openPopup();
-    }, () => {
-        alert("Erro ao acessar localização. Verifique as permissões.");
+window.onload = function() {
+    // Inicialização do mapa (Visão mundial padrão)
+    const map = L.map('map', {
+        center: [20, 0],
+        zoom: 2,
+        zoomControl: false
     });
-}
 
-// 5. FUNÇÃO: BUSCAR LOCALIZAÇÃO (DISPARADA PELO SEU NOVO BOTÃO)
-// A função de busca corrigida
-function buscarLocalizacao() {
-    const inputBusca = document.getElementById('campo-busca');
-    const valor = inputBusca.value;
+    // Definindo as camadas (Rua e Satélite)
+    const streetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Maps 2.0 | Esri'
+    }).addTo(map);
 
-    if (!valor) return;
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Maps 2.0 | Satélite'
+    });
 
-    console.log("Buscando por:", valor);
+    let activeMarker = null;
 
-    // Usamos o geocoder do Leaflet (L.Control.Geocoder) diretamente
-    // O Leaflet gerencia as permissões de CORS internamente para nós
-    L.Control.Geocoder.nominatim().geocode(valor, function(results) {
-        if (results && results.length > 0) {
-            const loc = results[0].center;
-            map.flyTo(loc, 16);
-            L.marker(loc).addTo(map).bindPopup(results[0].name).openPopup();
-        } else {
-            alert("Lugar não encontrado!");
+    // Função de Busca com Zoom Amplo (80% da área)
+    async function performSearch() {
+        const query = document.getElementById('input-busca').value;
+        if (!query) return;
+
+        document.getElementById('status-bar').innerText = "Buscando...";
+
+        // Buscamos com polygon_geojson para obter os limites reais (boundingbox)
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+        
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            if (data.length > 0) {
+                const result = data[0];
+                const latlng = [result.lat, result.lon];
+
+                // Ajuste de zoom baseado no tamanho do local (Bounding Box)
+                if (result.boundingbox) {
+                    const bbox = result.boundingbox;
+                    // O Leaflet usa [lat, lon], o Nominatim envia [lat_min, lat_max, lon_min, lon_max]
+                    const southWest = L.latLng(bbox[0], bbox[2]);
+                    const northEast = L.latLng(bbox[1], bbox[3]);
+                    const bounds = L.latLngBounds(southWest, northEast);
+                    
+                    // flyToBounds com padding garante que veremos o local inteiro com margem
+                    map.flyToBounds(bounds, { 
+                        padding: [40, 40], // Isso deixa os "80%" de visão que você pediu
+                        duration: 1.5 
+                    });
+                } else {
+                    // Se não tiver área definida (ex: um ponto específico), usa zoom médio
+                    map.flyTo(latlng, 10, { duration: 1.5 });
+                }
+
+                // Gerenciar marcador
+                if (activeMarker) map.removeLayer(activeMarker);
+                activeMarker = L.marker(latlng).addTo(map)
+                    .bindPopup(`<b>${result.display_name}</b>`)
+                    .openPopup();
+
+                document.getElementById('status-bar').innerText = result.display_name;
+            } else {
+                alert("Local não encontrado. Tente ser mais específico.");
+                document.getElementById('status-bar').innerText = "Pesquisa sem resultados.";
+            }
+        } catch (error) {
+            console.error("Erro na busca:", error);
+            document.getElementById('status-bar').innerText = "Erro na conexão.";
         }
+    }
+
+    // Controle de Camadas (Street vs Satellite)
+    document.getElementById('layer-sat').onclick = function() {
+        if (!map.hasLayer(satelliteLayer)) {
+            map.removeLayer(streetLayer);
+            map.addLayer(satelliteLayer);
+            this.classList.add('active');
+            document.getElementById('layer-street').classList.remove('active');
+        }
+    };
+
+    document.getElementById('layer-street').onclick = function() {
+        if (!map.hasLayer(streetLayer)) {
+            map.removeLayer(satelliteLayer);
+            map.addLayer(streetLayer);
+            this.classList.add('active');
+            document.getElementById('layer-sat').classList.remove('active');
+        }
+    };
+
+    // Botão GPS (Sua Localização)
+    document.getElementById('btn-gps').onclick = () => {
+        map.locate({setView: true, maxZoom: 15});
+    };
+
+    map.on('locationfound', (e) => {
+        if (activeMarker) map.removeLayer(activeMarker);
+        activeMarker = L.marker(e.latlng).addTo(map).bindPopup("Você está aqui!").openPopup();
+        document.getElementById('status-bar').innerText = "Minha Localização";
     });
-}
+
+    // Listeners de Eventos
+    document.getElementById('btn-busca').onclick = performSearch;
+    document.getElementById('input-busca').onkeypress = (e) => {
+        if (e.key === 'Enter') performSearch();
+    };
+
+    // Adiciona os controles de zoom no canto inferior direito
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+};

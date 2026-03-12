@@ -1,122 +1,107 @@
-*, *::before, *::after, *::selection{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    border-radius: 0;
-    text-decoration: none;
-    border: none;
-    font-family: sans-serif;
-    outline: none;
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
 }
 
-button {
-    cursor: pointer;
+body { 
+    height: 100vh; 
+    width: 100vw; 
+    overflow: hidden; 
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh;
+#map { 
+    height: 100%; 
+    width: 100%; 
+    z-index: 1; 
+    background: #f0f0f0;
 }
 
-header {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    
-    height: 15vh;
-    width: 100%;
+/* Interface Superior Flutuante */
+.ui-wrapper {
+    position: absolute; 
+    top: 20px; 
+    left: 20px; 
+    z-index: 1000;
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px;
 }
 
-#gradiente {
-    background: linear-gradient(to bottom, rgb(131, 160, 255), rgb(73, 103, 255));
+.search-bar {
+    background: white; 
+    padding: 5px 15px; 
+    border-radius: 28px;
+    display: flex; 
+    align-items: center; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    width: 420px; 
+    border: 1px solid #ddd;
 }
 
-header .logo {
-    display: flex;
-    align-items: center;
-    gap: 1.5em;
-
-    height: 100%;
+.search-bar input { 
+    border: none; 
+    outline: none; 
+    padding: 10px; 
+    width: 100%; 
+    font-size: 16px; 
+    color: #333;
 }
 
-.logo > img {
-    height: 80%;
-    margin-left: 1em;
+.divider { 
+    width: 1px; 
+    height: 25px; 
+    background: #ddd; 
+    margin: 0 10px; 
 }
 
-h1 {
-    font-size: 3em;
-    color: white;
+button { 
+    cursor: pointer; 
+    border: none; 
+    background: none; 
+    transition: 0.2s; 
+    font-size: 18px;
 }
 
-.busca {
-    height: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+#btn-busca:hover { color: #1a73e8; transform: scale(1.1); }
+#btn-gps:hover { color: #d93025; transform: scale(1.1); }
+
+/* Seletor de Camadas */
+.map-layers { 
+    display: flex; 
+    gap: 8px; 
 }
 
-input {
-    height: 50%;
-    width: 40vh;
-
-    margin-right: 1.5em;
-    padding-left: 20px;
-    display: flex;
-
-    background: none;
-    border: 3px solid white;
-    border-radius: 10px;
-
-    font-size: 1.5em;
-    caret-color: white;
-    color: white;
+.map-layers button {
+    background: white; 
+    padding: 8px 20px; 
+    border-radius: 20px;
+    font-size: 13px; 
+    font-weight: 600; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: #555;
+    border: 1px solid #eee;
 }
 
-input::placeholder {
-    color: white;
-    opacity: 0.6;
+.map-layers button.active { 
+    background: #1a73e8; 
+    color: white; 
+    border-color: #1a73e8;
 }
 
-.send {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: none;
-
-    height: 50%;
-
-}
-
-.send-img {
-    height: 100%;
-}
-
-.onde-estou {
-    height: 40%;
-    width: 20vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background-color: rgb(139, 166, 255);
-    border-radius: 10px;
-
-    font-size: 1.5em;
-    color: white;
-
-    cursor: pointer;
-}
-
-#map {
-    height: 85vh;
-    width: 100%;
-}
-
-.leaflet-container img {
-    background: transparent !important;
+/* Barra de Status Inferior */
+#status-bar {
+    position: absolute; 
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95); 
+    padding: 8px 25px; 
+    border-radius: 30px;
+    font-size: 13px; 
+    z-index: 1000; 
+    font-weight: 500;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
 }
